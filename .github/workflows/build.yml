@@ -10,31 +10,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out generated firmware
+      - name: Check out repo
         uses: actions/checkout@v4
 
-      - name: Install QMK
+      - name: Install QMK CLI
         run: |
           python3 -m pip install --user qmk
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Set up QMK dependencies
+      - name: Set up QMK firmware
         run: |
           qmk setup -y
 
-      - name: Copy custom keyboard into QMK firmware
+      - name: Copy Cosmos keyboard into QMK
         run: |
-          cp -r keyboards/* "$HOME/qmk_firmware/keyboards/"
+          mkdir -p "$HOME/qmk_firmware/keyboards/cosmos"
+          cp -r keyboards/cosmotyl "$HOME/qmk_firmware/keyboards/cosmos/cosmotyl"
 
-      - name: Compile left half
+      - name: Compile VIA left half
         run: |
           cd "$HOME/qmk_firmware"
-          qmk compile -kb handwired/cosmotyl -km via -e CONVERT_TO=promicro_rp2040
+          qmk compile -kb cosmos/cosmotyl -km via -e MAKECMDGOALS=uf2-split-left -e VIK_BUILD_LEFT=yes -e TARGET=cosmotyl_via_left
 
-      - name: Upload firmware artifact
+      - name: Compile VIA right half
+        run: |
+          cd "$HOME/qmk_firmware"
+          qmk compile -kb cosmos/cosmotyl -km via -e MAKECMDGOALS=uf2-split-right -e VIK_BUILD_RIGHT=yes -e TARGET=cosmotyl_via_right
+
+      - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: qmk-firmware
+          name: pumpkin-dactyl-qmk-firmware
           path: |
             $HOME/qmk_firmware/*.uf2
             $HOME/qmk_firmware/*.hex
