@@ -1,0 +1,41 @@
+name: Build QMK firmware
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out generated firmware
+        uses: actions/checkout@v4
+
+      - name: Install QMK
+        run: |
+          python3 -m pip install --user qmk
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Set up QMK dependencies
+        run: |
+          qmk setup -y
+
+      - name: Copy custom keyboard into QMK firmware
+        run: |
+          cp -r keyboards/* "$HOME/qmk_firmware/keyboards/"
+
+      - name: Compile left half
+        run: |
+          cd "$HOME/qmk_firmware"
+          qmk compile -kb handwired/cosmotyl -km via -e CONVERT_TO=promicro_rp2040
+
+      - name: Upload firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qmk-firmware
+          path: |
+            $HOME/qmk_firmware/*.uf2
+            $HOME/qmk_firmware/*.hex
+            $HOME/qmk_firmware/*.bin
