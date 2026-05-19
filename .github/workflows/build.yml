@@ -13,6 +13,16 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git \
+            python3-pip \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi \
+            libnewlib-arm-none-eabi
+
       - name: Install QMK CLI
         run: |
           python3 -m pip install --user qmk
@@ -30,12 +40,18 @@ jobs:
       - name: Compile VIA left half
         run: |
           cd "$HOME/qmk_firmware"
-          qmk compile -kb cosmos/cosmotyl -km via -e MAKECMDGOALS=uf2-split-left -e VIK_BUILD_LEFT=yes -e TARGET=cosmotyl_via_left
+          qmk compile -kb cosmos/cosmotyl -km via \
+            -e MAKECMDGOALS=uf2-split-left \
+            -e VIK_BUILD_LEFT=yes \
+            -e TARGET=cosmotyl_via_left
 
       - name: Compile VIA right half
         run: |
           cd "$HOME/qmk_firmware"
-          qmk compile -kb cosmos/cosmotyl -km via -e MAKECMDGOALS=uf2-split-right -e VIK_BUILD_RIGHT=yes -e TARGET=cosmotyl_via_right
+          qmk compile -kb cosmos/cosmotyl -km via \
+            -e MAKECMDGOALS=uf2-split-right \
+            -e VIK_BUILD_RIGHT=yes \
+            -e TARGET=cosmotyl_via_right
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
