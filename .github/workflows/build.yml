@@ -53,11 +53,21 @@ jobs:
             -e VIK_BUILD_RIGHT=yes \
             -e TARGET=cosmotyl_via_right
 
+      - name: Show build outputs
+        run: |
+          echo "Root outputs:"
+          ls -lah "$HOME/qmk_firmware" || true
+          echo ".build outputs:"
+          find "$HOME/qmk_firmware/.build" -maxdepth 2 -type f | sort || true
+
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pumpkin-dactyl-qmk-firmware
           path: |
-            $HOME/qmk_firmware/*.uf2
-            $HOME/qmk_firmware/*.hex
-            $HOME/qmk_firmware/*.bin
+            /home/runner/qmk_firmware/.build/*.uf2
+            /home/runner/qmk_firmware/*.uf2
+            /home/runner/qmk_firmware/.build/*.hex
+            /home/runner/qmk_firmware/*.hex
+            /home/runner/qmk_firmware/.build/*.bin
+            /home/runner/qmk_firmware/*.bin
